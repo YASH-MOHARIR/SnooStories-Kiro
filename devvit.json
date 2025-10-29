@@ -1,9 +1,20 @@
 {
   "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
-  "name": "<% name %>",
+  "name": "snoo-stories",
   "http": {
-    "domains": ["generativelanguage.googleapis.com"]
+    "domains": [
+      "generativelanguage.googleapis.com"
+    ]
   },
+  "settings": [
+    {
+      "type": "string",
+      "name": "geminiApiKey",
+      "label": "Gemini API Key",
+      "helpText": "Your Google Gemini API key from https://aistudio.google.com/app/apikey",
+      "isSecret": true
+    }
+  ],
   "post": {
     "dir": "dist/client",
     "entrypoints": {
@@ -32,5 +43,8 @@
   },
   "triggers": {
     "onAppInstall": "/internal/on-app-install"
+  },
+  "dev": {
+    "subreddit": "snoo_stories_dev"
   }
 }

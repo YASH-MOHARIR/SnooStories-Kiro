@@ -25,9 +25,9 @@ GEMINI_API_KEY=your_actual_api_key_here
 const response = await fetch('/api/gemini', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ 
-    prompt: 'Generate a fun game character description' 
-  })
+  body: JSON.stringify({
+    prompt: 'Generate a fun game character description',
+  }),
 });
 
 const data = await response.json();

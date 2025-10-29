@@ -125,44 +125,61 @@ router.post('/internal/menu/post-create', async (_req, res): Promise<void> => {
   }
 });
 
-// Example Gemini endpoint
-router.post<unknown, { response: string } | { status: string; message: string }, { prompt: string }>(
-  '/api/gemini',
-  async (req, res): Promise<void> => {
-    try {
-      const { prompt } = req.body;
+// Generate story endpoint
+router.post<
+  unknown,
+  { story: string; theme: string } | { status: string; message: string },
+  { words: string[]; themeContext: string }
+>('/api/generate-story', async (req, res): Promise<void> => {
+  try {
+    const { words, themeContext } = req.body;
 
-      if (!prompt) {
-        res.status(400).json({
-          status: 'error',
-          message: 'Prompt is required',
-        });
-        return;
-      }
+    if (!words || words.length !== 3) {
+      res.status(400).json({
+        status: 'error',
+        message: 'Exactly 3 words are required',
+      });
+      return;
+    }
 
-      // Get API key from environment variable
-      const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) {
-        res.status(500).json({
-          status: 'error',
-          message: 'GEMINI_API_KEY not configured',
-        });
-        return;
-      }
+    // Validate words
+    const validWords = words.filter((w) => w && w.trim().length > 0);
+    if (validWords.length !== 3) {
+      res.status(400).json({
+        status: 'error',
+        message: 'All 3 words must be non-empty',
+      });
+      return;
+    }
 
-      const gemini = new GeminiClient(apiKey);
-      const response = await gemini.generateContent(prompt);
-
-      res.json({ response });
-    } catch (error) {
-      console.error('Gemini API error:', error);
+    // TEMPORARY: Hardcoded API key for testing
+    // TODO: Replace with proper environment variable handling for production
+    const apiKey = 'AIzaSyBEvEfgNibbtItv5Cehr6Ci-VYLRneqrNc';
+    
+    if (!apiKey) {
+      console.error('GEMINI_API_KEY not configured');
       res.status(500).json({
         status: 'error',
-        message: error instanceof Error ? error.message : 'Failed to generate content',
+        message: 'GEMINI_API_KEY not configured',
       });
+      return;
     }
+
+    const gemini = new GeminiClient(apiKey);
+    const story = await gemini.generateStory(validWords, themeContext);
+
+    res.json({
+      story: story.trim(),
+      theme: themeContext,
+    });
+  } catch (error) {
+    console.error('Story generation error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: error instanceof Error ? error.message : 'Failed to generate story',
+    });
   }
-);
+});
 
 // Use router middleware
 app.use(router);

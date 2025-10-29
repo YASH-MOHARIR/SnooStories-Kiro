@@ -38,9 +38,30 @@ export class GeminiClient {
   private apiKey: string;
   private model: string;
 
-  constructor(apiKey: string, model: string = 'gemini-1.5-flash') {
+  constructor(apiKey: string, model: string = 'gemini-1.5-flash-latest') {
     this.apiKey = apiKey;
     this.model = model;
+  }
+
+  /**
+   * Generate a 10-word story based on 3 words and theme
+   */
+  async generateStory(words: string[], themeContext: string): Promise<string> {
+    const prompt = `You are a creative storyteller. Create a ${themeContext} story using these 3 words: ${words.join(', ')}.
+
+RULES:
+- The story must be EXACTLY 10 words long
+- Must be funny, clever, or surprising
+- Must incorporate all 3 words naturally
+- Must fit the ${themeContext} theme
+- No extra punctuation or formatting
+- Just the 10-word story, nothing else
+
+Example format: "Vampire ordered pizza delivery but bicycle courier arrived at sunrise."
+
+Now create your 10-word story:`;
+
+    return this.generateContent(prompt, { temperature: 0.9, maxTokens: 100 });
   }
 
   /**
@@ -53,7 +74,7 @@ export class GeminiClient {
       maxTokens?: number;
     }
   ): Promise<string> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1/models/${this.model}:generateContent?key=${this.apiKey}`;
 
     const requestBody: GeminiRequest = {
       contents: [
@@ -94,7 +115,7 @@ export class GeminiClient {
    * Chat with conversation history
    */
   async chat(messages: { role: 'user' | 'model'; text: string }[]): Promise<string> {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${this.apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1/models/${this.model}:generateContent?key=${this.apiKey}`;
 
     const requestBody: GeminiRequest = {
       contents: messages.map((msg) => ({
