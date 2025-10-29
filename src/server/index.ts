@@ -2,6 +2,7 @@ import express from 'express';
 import { InitResponse, IncrementResponse, DecrementResponse } from '../shared/types/api';
 import { redis, reddit, createServer, context, getServerPort } from '@devvit/web/server';
 import { createPost } from './core/post';
+import { GeminiClient } from './core/gemini';
 
 const app = express();
 
@@ -123,6 +124,45 @@ router.post('/internal/menu/post-create', async (_req, res): Promise<void> => {
     });
   }
 });
+
+// Example Gemini endpoint
+router.post<unknown, { response: string } | { status: string; message: string }, { prompt: string }>(
+  '/api/gemini',
+  async (req, res): Promise<void> => {
+    try {
+      const { prompt } = req.body;
+
+      if (!prompt) {
+        res.status(400).json({
+          status: 'error',
+          message: 'Prompt is required',
+        });
+        return;
+      }
+
+      // Get API key from environment variable
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        res.status(500).json({
+          status: 'error',
+          message: 'GEMINI_API_KEY not configured',
+        });
+        return;
+      }
+
+      const gemini = new GeminiClient(apiKey);
+      const response = await gemini.generateContent(prompt);
+
+      res.json({ response });
+    } catch (error) {
+      console.error('Gemini API error:', error);
+      res.status(500).json({
+        status: 'error',
+        message: error instanceof Error ? error.message : 'Failed to generate content',
+      });
+    }
+  }
+);
 
 // Use router middleware
 app.use(router);

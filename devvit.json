@@ -1,6 +1,9 @@
 {
   "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
   "name": "<% name %>",
+  "http": {
+    "domains": ["generativelanguage.googleapis.com"]
+  },
   "post": {
     "dir": "dist/client",
     "entrypoints": {
